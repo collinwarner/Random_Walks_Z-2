@@ -2,7 +2,7 @@ import random as r
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.linalg as linalg
-
+import math
 def in_1d_boundary(position, boundary):
     return position > boundary[0] and position < boundary[1]
 
@@ -190,6 +190,27 @@ def compute_number_paths_out(s, d):
     # memo[(s, d)] = ans
     # return ans
 
+def nCr(n, r):
+    f = math.factorial
+    return f(n)//(f(n-r)*f(r))
+def closed_form_paths_out(s, d):
+    #rn only works for d = 2
+    #compute row (2(s-1)) column 2(s-1)/2 + 1 in pascals triangle
+    # print("computing s, d", s, d)
+    total_num_out_with_ob = nCr(2*(s-1), s) 
+    # extra paths are the entry immeadiatly above and to the right (but for some reason pascals goes by 2)
+    extra_paths = nCr(2*(s-1), s+2) if (2*(s-1) > s+2) else 0
+    print(extra_paths)
+    return total_num_out_with_ob - extra_paths
+
+def correction(n, val):
+    print(f"(n, val) {(n, val)}")
+    if (n == 0):
+        return val
+    if (n==1): 
+        return 2*val
+    return 2*correction(n-1, val) + ((n%2) + 1)*val
+
 memo_tot_paths = {}
 def compute_number_paths(s, d):
     """
@@ -227,13 +248,15 @@ def probability_leaving(s, d):
     return total_probability
 
 if __name__ == "__main__":
-    steps =  1000 
+    trials = 10 
     bound = 2 
-    num_paths_out = compute_number_paths_out(steps, bound)
-    num_paths = compute_number_paths(steps, bound)
-    prob_leave = probability_leaving(steps, bound)
-    print(f"Num Paths: {num_paths} Paths Out: {num_paths_out} Probability exition on step {steps}: {num_paths_out/num_paths}")
-    print(f"Probability of leaving in under {steps} steps: {prob_leave}")
+    for steps in range(bound, bound+trials):
+        cf_paths_out = closed_form_paths_out(steps, bound)
+        num_paths_out = compute_number_paths_out(steps, bound)
+        num_paths = compute_number_paths(steps, bound)
+        prob_leave = probability_leaving(steps, bound)
+        print(f"CF paths out: {cf_paths_out} Paths Out: {num_paths_out} diff {cf_paths_out - num_paths_out}")
+        # print(f"Probability of leaving in under {steps} steps: {prob_leave}")
     # counting(steps, bound)
     #markov_processes()
     # b_1d = (float("-inf"), 7)
