@@ -183,11 +183,42 @@ def compute_number_paths_out(s, d):
     memo[(s, d)] = ans
     return ans
 
+memo_tot_paths = {}
+def compute_number_paths(s, d):
+    """
+    Computes total number of paths of length s, that do not exit early
+
+    Recurrence: C(s, d) = C(s-1, d-1) + 2C(s-1, d) + C(s-1, d+1)
+    
+    The recurrence is for a random walk in 2d, where the boundary
+    is the half plane that is d steps away.
+
+    Base Cases: 
+        C(s, d) = (4)^s if s <= d // all paths are viable none will leave early 
+        C(s, d) = 0 if d = 0 // we have already hit the boundary and and there are steps left
+ 
+    Using memoization should lead to a runtime of O(s^2)
+    O(1) work on each state, O(s)O(d) states is an overcount since s < d requires no recursion
+    """
+    if (s, d) in memo_tot_paths:
+        return memo_tot_paths[(s, d)]
+    
+    if (d >= s): 
+        return (4)**s 
+    if (d == 0): 
+        return 0
+
+    c = lambda x, y : compute_number_paths(x, y)
+    ans = c(s-1, d-1) + 2*c(s-1, d) + c(s-1, d+1)
+    memo_tot_paths[(s, d)] = ans
+    return ans
+
 if __name__ == "__main__":
-    steps = 3
+    steps = 5
     bound = 2 
     num_paths_out = compute_number_paths_out(steps, bound)
-    print(num_paths_out)
+    num_paths = compute_number_paths(steps, bound)
+    print(f"Num Paths: {num_paths} Paths Out: {num_paths_out} Probability exition on step {steps}: {num_paths_out/num_paths}")
     #counting(steps, bound)
     #markov_processes()
     # b_1d = (float("-inf"), 7)
