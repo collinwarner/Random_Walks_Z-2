@@ -88,43 +88,44 @@ def markov_processes():
 
 def what_step_exit(s, b):
     pos = 0
-    for i, c in enumerate(s):
-        if c == '0':
-            pos -= 1
-        else:
+    for i in range(0, len(s), 2):
+        if s[i:i+2] == '00':
             pos += 1
-        if abs(pos) >= b:
+        elif s[i:i+2] == '01':
+            pos -= 1
+        if pos >= b:
             return i + 1
     return len(s)
 
 def out_before(s, b):
+    # 00 -> u 01 -> d,10 -> l, 01 -> r
     pos = 0
-    for c in s[:-1]:
-        if c == '0':
-            pos -= 1
-        else: 
+    for i in range(0, len(s)-2, 2):
+        if s[i:i+2] == '00':
             pos += 1
+        elif s[i:i+2] == '01': 
+            pos -= 1
 
-        if abs(pos) >= b:
+        if pos >= b:
             return True
 
     return False
 
 def out_at_end(s, b):
     pos = 0
-    for c in s:
-        if c == '0':
-            pos -= 1
-        else:
+    for i in range(0, len(s), 2):
+        if s[i:i+2] == '00':
             pos += 1
-    return abs(pos) >= b
+        elif s[i:i+2] == '01':
+            pos -= 1
+    return pos >= b
 
 def counting(s, b):
     # a word is a binary number. 0 represents down, 1 represents up
     words = []
-    for i in range(2**s):
-        words.append(format(i, f"0{s}b"))
-    
+    for i in range(4**s):
+        words.append(format(i, f"0{2*s}b"))
+
     #print(words)
     #eliminate all words that would exit before the final step
     valid_words = []
@@ -132,23 +133,16 @@ def counting(s, b):
     for w in words:
         if not out_before(w, b):
             valid_words.append(w)
-        else:
-            double_check.setdefault(what_step_exit(w, b), set())
-            double_check[what_step_exit(w, b)].add(w[:what_step_exit(w, b)])
     
-    # print(double_check)
-    extra_num = 0
-    for k in double_check: 
-        extra_num += len(double_check[k])
     #find all words that escape on the last step
     escaped_words = []
     for w in valid_words:
         if out_at_end(w, b):
             escaped_words.append(w)
-    print(f"Valid Words {len(valid_words)} {extra_num}\n")#, valid_words)
-    print(f"Escaped Words {len(escaped_words)}\n")#, escaped_words) 
+    
+    print(f"Valid Words {len(valid_words)} ")#, valid_words)
+    print(f"Escaped Words {len(escaped_words)}")#, escaped_words) 
     print(f"Probability Escaping on step {s}: ", len(escaped_words)/len(valid_words)) 
-    print(f"Probability Escaping on step {s}: ", len(escaped_words)/(len(valid_words) + extra_num)) 
 
 memo = {}
 def compute_number_paths_out(s, d):
@@ -228,20 +222,19 @@ def compute_number_paths(s, d):
 
 def probability_leaving(s, d):
     total_probability = 0
-    for i in range(s):
-        total_probability += compute_number_paths_out(i, d)
-    total_probability /= compute_number_paths(i, d)
+    for i in range(1,s+1):
+        total_probability += compute_number_paths_out(i, d)/compute_number_paths(i, d)
     return total_probability
 
 if __name__ == "__main__":
-    steps = 10 
+    steps =  10 
     bound = 2 
     num_paths_out = compute_number_paths_out(steps, bound)
     num_paths = compute_number_paths(steps, bound)
     prob_leave = probability_leaving(steps, bound)
     print(f"Num Paths: {num_paths} Paths Out: {num_paths_out} Probability exition on step {steps}: {num_paths_out/num_paths}")
     print(f"Probability of leaving in under {steps} steps: {prob_leave}")
-    #counting(steps, bound)
+    counting(steps, bound)
     #markov_processes()
     # b_1d = (float("-inf"), 7)
     # trials = 1
