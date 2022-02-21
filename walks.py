@@ -168,20 +168,34 @@ def compute_number_paths_out(s, d):
     Using memoization should lead to a runtime of O(s^2)
     O(1) work on each state, O(s)O(d) states is an overcount since s < d requires no recursion
     """
-    if (s, d) in memo:
-        return memo[(s, d)]
+    memo = {} # initialize base cases
+    memo[(0, 0)] = 1
+    for s_i in range(s+1):
+        for d_i in range(d+s_i+1):
+            if (s_i, d_i) not in memo:
+                if (s_i < d_i):
+                    memo[(s_i, d_i)] = 0
+                elif d_i == 0:
+                    memo[(s_i, d_i)] = 0
+                elif s_i == d_i:
+                    memo[(s_i, d_i)] = 1
+                else:
+                    memo[(s_i, d_i)] = memo[(s_i - 1, d_i -1)] + 2*memo[(s_i - 1, d_i)] + memo[(s_i - 1, d_i + 1)]
+    return memo[(s, d)] 
+    # if (s, d) in memo:
+    #     return memo[(s, d)]
     
-    if (d > s): 
-        return 0
-    if (d == 0): 
-        return 0
-    if (s == d): 
-        return 1
+    # if (d > s): 
+    #     return 0
+    # if (d == 0): 
+    #     return 0
+    # if (s == d): 
+    #     return 1
 
-    c = lambda x, y : compute_number_paths_out(x, y)
-    ans = c(s-1, d-1) + 2*c(s-1, d) + c(s-1, d+1)
-    memo[(s, d)] = ans
-    return ans
+    # c = lambda x, y : compute_number_paths_out(x, y)
+    # ans = c(s-1, d-1) + 2*c(s-1, d) + c(s-1, d+1)
+    # memo[(s, d)] = ans
+    # return ans
 
 def compute_number_paths(s, d):
     """
@@ -204,7 +218,6 @@ def compute_number_paths(s, d):
     for s_i in range(s+1):
         for d_i in range(d+s_i+1):
             if (s_i, d_i) not in memo:
-                print(f"Computing {(s_i, d_i)}")
                 if (s_i <= d_i):
                     memo[(s_i, d_i)] = (4)**s_i
                 elif d_i == 0:
