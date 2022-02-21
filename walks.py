@@ -183,7 +183,6 @@ def compute_number_paths_out(s, d):
     memo[(s, d)] = ans
     return ans
 
-memo_tot_paths = {}
 def compute_number_paths(s, d):
     """
     Computes total number of paths of length s, that do not exit early
@@ -200,25 +199,35 @@ def compute_number_paths(s, d):
     Using memoization should lead to a runtime of O(s^2)
     O(1) work on each state, O(s)O(d) states is an overcount since s < d requires no recursion
     """
-    if (s, d) in memo_tot_paths:
-        return memo_tot_paths[(s, d)]
-    
-    if (d >= s): 
-        return (4)**s 
-    if (d == 0): 
-        return 0
+    memo = {} # initialize base cases
+    memo[(0, 0)] = 1
+    for s_i in range(s+1):
+        for d_i in range(d+s_i+1):
+            if (s_i, d_i) not in memo:
+                print(f"Computing {(s_i, d_i)}")
+                if (s_i <= d_i):
+                    memo[(s_i, d_i)] = (4)**s_i
+                elif d_i == 0:
+                    memo[(s_i, d_i)] = 0
+                else:
+                    memo[(s_i, d_i)] = memo[(s_i - 1, d_i -1)] + 2*memo[(s_i - 1, d_i)] + memo[(s_i - 1, d_i + 1)]
+    return memo[(s, d)] 
 
-    c = lambda x, y : compute_number_paths(x, y)
-    ans = c(s-1, d-1) + 2*c(s-1, d) + c(s-1, d+1)
-    memo_tot_paths[(s, d)] = ans
-    return ans
+def probability_leaving(s, d):
+    total_probability = 0
+    for i in range(s):
+        total_probability += compute_number_paths_out(i, d)
+    total_probability /= compute_number_paths(i, d)
+    return total_probability
 
 if __name__ == "__main__":
-    steps = 5
+    steps = 10 
     bound = 2 
     num_paths_out = compute_number_paths_out(steps, bound)
     num_paths = compute_number_paths(steps, bound)
+    prob_leave = probability_leaving(steps, bound)
     print(f"Num Paths: {num_paths} Paths Out: {num_paths_out} Probability exition on step {steps}: {num_paths_out/num_paths}")
+    print(f"Probability of leaving in under {steps} steps: {prob_leave}")
     #counting(steps, bound)
     #markov_processes()
     # b_1d = (float("-inf"), 7)
