@@ -86,6 +86,17 @@ def markov_processes():
     print(res)
     print("end probability: ", res[n//2] )
 
+def what_step_exit(s, b):
+    pos = 0
+    for i, c in enumerate(s):
+        if c == '0':
+            pos -= 1
+        else:
+            pos += 1
+        if abs(pos) >= b:
+            return i + 1
+    return len(s)
+
 def out_before(s, b):
     pos = 0
     for c in s[:-1]:
@@ -109,28 +120,75 @@ def out_at_end(s, b):
     return abs(pos) >= b
 
 def counting(s, b):
+    # a word is a binary number. 0 represents down, 1 represents up
     words = []
     for i in range(2**s):
         words.append(format(i, f"0{s}b"))
     
     #print(words)
+    #eliminate all words that would exit before the final step
     valid_words = []
+    double_check = {}
     for w in words:
         if not out_before(w, b):
             valid_words.append(w)
+        else:
+            double_check.setdefault(what_step_exit(w, b), set())
+            double_check[what_step_exit(w, b)].add(w[:what_step_exit(w, b)])
     
+    # print(double_check)
+    extra_num = 0
+    for k in double_check: 
+        extra_num += len(double_check[k])
+    #find all words that escape on the last step
     escaped_words = []
     for w in valid_words:
         if out_at_end(w, b):
             escaped_words.append(w)
-    print(f"Valid Words {len(valid_words)}\n")#, valid_words)
+    print(f"Valid Words {len(valid_words)} {extra_num}\n")#, valid_words)
     print(f"Escaped Words {len(escaped_words)}\n")#, escaped_words) 
     print(f"Probability Escaping on step {s}: ", len(escaped_words)/len(valid_words)) 
+    print(f"Probability Escaping on step {s}: ", len(escaped_words)/(len(valid_words) + extra_num)) 
+
+memo = {}
+def compute_number_paths_out(s, d):
+    """
+    Computes number of paths out in exactly s steps, when the boundary is d steps away.
+
+    Recurrence: C(s, d) = C(s-1, d-1) + 2C(s-1, d) + C(s-1, d+1)
+    
+    The recurrence is for a random walk in 2d, where the boundary
+    is the half plane that is d steps away.
+
+    Base Cases: 
+        C(s, d) = 0 if s < d // less steps than to boundary then obviously can't reach it
+        C(s, d) = 0 if d = 0 // we have already hit the boundary and and there are steps left
+        C(s, d) = 1 if s= d // there is only one path that exactly hits the boundary (going straight there)
+ 
+    Using memoization should lead to a runtime of O(s^2)
+    O(1) work on each state, O(s)O(d) states is an overcount since s < d requires no recursion
+    """
+    if (s, d) in memo:
+        return memo[(s, d)]
+    
+    if (d > s): 
+        return 0
+    if (d == 0): 
+        return 0
+    if (s == d): 
+        return 1
+
+    c = lambda x, y : compute_number_paths_out(x, y)
+    ans = c(s-1, d-1) + 2*c(s-1, d) + c(s-1, d+1)
+    memo[(s, d)] = ans
+    return ans
 
 if __name__ == "__main__":
-    steps = 20 
-    bound = 2
-    counting(steps, bound)
+    steps = 3
+    bound = 2 
+    num_paths_out = compute_number_paths_out(steps, bound)
+    print(num_paths_out)
+    #counting(steps, bound)
     #markov_processes()
     # b_1d = (float("-inf"), 7)
     # trials = 1
