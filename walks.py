@@ -162,7 +162,6 @@ def compute_number_paths_out(s, d):
     Using memoization should lead to a runtime of O(s^2)
     O(1) work on each state, O(s)O(d) states is an overcount since s < d requires no recursion
     """
-    memo = {} # initialize base cases
     memo[(0, 0)] = 1
     for s_i in range(s+1):
         for d_i in range(d+s_i+1):
@@ -191,6 +190,7 @@ def compute_number_paths_out(s, d):
     # memo[(s, d)] = ans
     # return ans
 
+memo_tot_paths = {}
 def compute_number_paths(s, d):
     """
     Computes total number of paths of length s, that do not exit early
@@ -207,34 +207,34 @@ def compute_number_paths(s, d):
     Using memoization should lead to a runtime of O(s^2)
     O(1) work on each state, O(s)O(d) states is an overcount since s < d requires no recursion
     """
-    memo = {} # initialize base cases
-    memo[(0, 0)] = 1
+    memo_tot_paths[(0, 0)] = 1
     for s_i in range(s+1):
         for d_i in range(d+s_i+1):
-            if (s_i, d_i) not in memo:
+            if (s_i, d_i) not in memo_tot_paths:
                 if (s_i <= d_i):
-                    memo[(s_i, d_i)] = (4)**s_i
+                    memo_tot_paths[(s_i, d_i)] = (4)**s_i
                 elif d_i == 0:
-                    memo[(s_i, d_i)] = 0
+                    memo_tot_paths[(s_i, d_i)] = 0
                 else:
-                    memo[(s_i, d_i)] = memo[(s_i - 1, d_i -1)] + 2*memo[(s_i - 1, d_i)] + memo[(s_i - 1, d_i + 1)]
-    return memo[(s, d)] 
+                    memo_tot_paths[(s_i, d_i)] = memo_tot_paths[(s_i - 1, d_i -1)] + 2*memo_tot_paths[(s_i - 1, d_i)] + memo_tot_paths[(s_i - 1, d_i + 1)]
+    return memo_tot_paths[(s, d)] 
 
 def probability_leaving(s, d):
     total_probability = 0
     for i in range(1,s+1):
-        total_probability += compute_number_paths_out(i, d)/compute_number_paths(i, d)
+        # extra_paths = sum([compute_number_paths_out(j, d) for j in range(1, i-1)])
+        total_probability += compute_number_paths_out(i, d)/(4**i)#(compute_number_paths(i, d) + extra_paths)
     return total_probability
 
 if __name__ == "__main__":
-    steps =  10 
+    steps =  1000 
     bound = 2 
     num_paths_out = compute_number_paths_out(steps, bound)
     num_paths = compute_number_paths(steps, bound)
     prob_leave = probability_leaving(steps, bound)
     print(f"Num Paths: {num_paths} Paths Out: {num_paths_out} Probability exition on step {steps}: {num_paths_out/num_paths}")
     print(f"Probability of leaving in under {steps} steps: {prob_leave}")
-    counting(steps, bound)
+    # counting(steps, bound)
     #markov_processes()
     # b_1d = (float("-inf"), 7)
     # trials = 1
