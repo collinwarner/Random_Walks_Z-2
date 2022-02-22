@@ -197,10 +197,13 @@ def closed_form_paths_out(s, d):
     #rn only works for d = 2
     #compute row (2(s-1)) column 2(s-1)/2 + 1 in pascals triangle
     # print("computing s, d", s, d)
-    total_num_out_with_ob = nCr(2*(s-1), s) 
+    current_row = 2*(s-1)
+    offset = d-1
+    midpoint = current_row//2
+    total_num_out_with_ob = nCr(current_row, midpoint + offset) 
     # extra paths are the entry immeadiatly above and to the right (but for some reason pascals goes by 2)
-    extra_paths = nCr(2*(s-1), s+2) if (2*(s-1) > s+2) else 0
-    print(extra_paths)
+    extra_paths = nCr(current_row, current_row//2 + offset +2) if (current_row >= midpoint + offset + 2 ) else 0
+    # print(extra_paths)
     return total_num_out_with_ob - extra_paths
 
 def correction(n, val):
@@ -249,7 +252,7 @@ def probability_leaving(s, d):
 
 if __name__ == "__main__":
     trials = 10 
-    bound = 2 
+    bound = 9 
     for steps in range(bound, bound+trials):
         cf_paths_out = closed_form_paths_out(steps, bound)
         num_paths_out = compute_number_paths_out(steps, bound)
