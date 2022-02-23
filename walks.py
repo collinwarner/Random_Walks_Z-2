@@ -191,8 +191,9 @@ def compute_number_paths_out(s, d):
     # return ans
 
 def nCr(n, r):
-    f = math.factorial
-    return f(n)//(f(n-r)*f(r))
+    # f = math.factorial
+    return math.comb(n, r)#f(n)//(f(n-r)*f(r))
+
 def closed_form_paths_out(s, d):
     #rn only works for d = 2
     #compute row (2(s-1)) column 2(s-1)/2 + 1 in pascals triangle
@@ -247,20 +248,47 @@ def probability_leaving(s, d):
     total_probability = 0
     for i in range(1,s+1):
         # extra_paths = sum([compute_number_paths_out(j, d) for j in range(1, i-1)])
-        total_probability += compute_number_paths_out(i, d)/(4**i)#(compute_number_paths(i, d) + extra_paths)
+        total_probability += compute_number_paths_out(i, d)/1#(4**i)#(compute_number_paths(i, d) + extra_paths)
     return total_probability
 
+def ev_half_plane(d, epochs):
+    ev = 0
+    end_epoch = d+epochs
+    # print(sum([closed_form_paths_out(s, d)/4**s for s in range(d, end_epoch)]))
+    for s in range(d, d+epochs+1):
+        #extra_paths = sum([compute_number_paths_out(j, d) for j in range(1, s-1)])
+        paths_out = closed_form_paths_out(s, d)
+        total_paths = 4**s
+        #print(f"greater: {paths_out < total_paths} s: {s} paths out: {paths_out} total_paths: {total_paths}")
+        ev += (s*paths_out)/(total_paths)#(4**(end_epoch))
+
+    return ev
+
+def pascals_triangle(d):
+
+    for i in range(d):
+        row = ""
+        for j in range(i+1):
+            row += str(nCr(i, j)) + " "
+        row = row[:-1]
+        print(row)
+
+import sys
 if __name__ == "__main__":
-    trials = 10 
-    bound = 9 
-    for steps in range(bound, bound+trials):
-        cf_paths_out = closed_form_paths_out(steps, bound)
-        num_paths_out = compute_number_paths_out(steps, bound)
-        num_paths = compute_number_paths(steps, bound)
-        prob_leave = probability_leaving(steps, bound)
-        print(f"CF paths out: {cf_paths_out} Paths Out: {num_paths_out} diff {cf_paths_out - num_paths_out}")
-        # print(f"Probability of leaving in under {steps} steps: {prob_leave}")
-    # counting(steps, bound)
+    trials = int(sys.argv[1]) if len(sys.argv) > 1 else 10 
+    bound = 2 
+    pascals_triangle(20)
+    # ev = ev_half_plane(bound, trials)
+    # print(ev)
+    # for steps in range(bound, bound+trials):
+    #     cf_paths_out = closed_form_paths_out(steps, bound)
+    #     num_paths_out = compute_number_paths_out(steps, bound)
+    #     num_paths = compute_number_paths(steps, bound)
+    #     prob_leave = probability_leaving(steps, bound)
+    #     # counting(steps, bound)
+    #     print(f"CF paths out: {cf_paths_out} Paths Out: {num_paths_out} diff {cf_paths_out - num_paths_out}")
+    #     # print(f"Probability of leaving in under {steps} steps: {prob_leave}")
+    
     #markov_processes()
     # b_1d = (float("-inf"), 7)
     # trials = 1
